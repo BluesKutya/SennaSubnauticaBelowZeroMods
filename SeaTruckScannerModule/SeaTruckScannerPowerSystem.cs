@@ -45,7 +45,7 @@ namespace SeaTruckScannerModule
         public Color colorFull = new Color(0f, 1f, 0f, 1f);
 
         private bool isCabinPowered = false;
-        private bool isMainPowered = false;
+        private bool isMainPowered = true;
                 
         public Dictionary<string, string> serializedSlots;
                 
@@ -58,8 +58,8 @@ namespace SeaTruckScannerModule
 
         private static readonly HashSet<TechType> compatibleTech = new HashSet<TechType>
         {
-            TechType.Battery,            
-            TechType.PrecursorIonBattery
+            TechType.MapRoomUpgradeScanRange,            
+            TechType.MapRoomUpgradeScanSpeed
         };       
 
         private string labelInteract = string.Empty;
@@ -194,14 +194,8 @@ namespace SeaTruckScannerModule
         {
             if (GameModeUtils.RequiresPower())
             {
-                bool flag = CheckMainPowerLevel();
-
-                if (isMainPowered != flag)
-                {
-                    isMainPowered = flag;
-
-                    onPowerLevelChanged?.Invoke(isCabinPowered, isMainPowered);
-                }               
+                onPowerLevelChanged?.Invoke(isCabinPowered, isMainPowered);
+               
             }
             else if (!isMainPowered)            
             {
@@ -226,63 +220,15 @@ namespace SeaTruckScannerModule
 
             onPowerLevelChanged?.Invoke(isCabinPowered, isMainPowered);
         }
-        
-        private bool CheckMainPowerLevel()
-        {            
-            foreach (KeyValuePair<string, IBattery> kvp in batteries)
-            {
-                if (kvp.Value != null && kvp.Value.charge > 0f)
-                {
-                    return true;
-                }
-            }
-
-            return false;            
-        }
-
-        public float TotalCanProvide(out int sourceCount)
-        {
-            float totalPower = 0f;
-            sourceCount = 0;
-
-            foreach (KeyValuePair<string, IBattery> keyValuePair in batteries)
-            {
-                if (keyValuePair.Value != null && keyValuePair.Value.charge > 0f)
-                {
-                    totalPower += keyValuePair.Value.charge;
-                    sourceCount++;
-                }
-            }            
-            
-            return totalPower;
-        }
 
         public void ConsumePower(float amount)
         {
             if (GameModeUtils.RequiresPower())
             {
-                float totalPower = TotalCanProvide(out int sourceCount);
-
-                if (sourceCount > 0)
-                {
-                    amount = (amount > totalPower) ? totalPower : amount;
-                    amount = amount / sourceCount;
-
-                    BZLogger.Debug($"consume power: amount: {amount}, sources: {sourceCount}");
-
-                    foreach (KeyValuePair<string, IBattery> kvp in batteries)
-                    {
-                        if (kvp.Value != null && kvp.Value.charge > 0f)
-                        {
-                            kvp.Value.charge += -Mathf.Min(amount, kvp.Value.charge);                            
-
-                            if (slots.TryGetValue(kvp.Key, out SlotDefinition definition))
-                            {
-                                UpdateVisuals(definition, kvp.Value.charge / kvp.Value.capacity, equipment.GetItemInSlot(kvp.Key).item.GetTechType());
-                            }
-                        }                        
-                    }                    
-                }                
+                float consumed = 0f;
+                powerRelay.ConsumeEnergy(amount, out consumed);
+                //BZLogger.Debug($"consume power: amount: {amount}, consumed: {consumed}");
+                //isMainPowered = (consumed >= amount);
             }            
         } 
         
@@ -300,23 +246,13 @@ namespace SeaTruckScannerModule
                 return true;
             }
 
-            EquipmentType equipmentType = TechData.GetEquipmentType(techType);
-
-            if (equipmentType == EquipmentType.BatteryCharger)
-            {
-                return true;
-            }
-
-            if (verbose)
-            {
-                ErrorMessage.AddMessage(Language.main.Get("BatteryChargerIncompatibleItem"));
-            }
-
             return false;
         }
 
         private void OnEquip(string slot, InventoryItem item)
         {
+
+/*
             if (item != null)
             {
                 if (item.item != null)
@@ -342,15 +278,18 @@ namespace SeaTruckScannerModule
                     }
                 }
             }
+*/
+
         }
 
         private void OnUnequip(string slot, InventoryItem item)
         {
+/*
             if (batteries.ContainsKey(slot))
             {
                 batteries[slot] = null;
             }
-
+*/
             if (slots.TryGetValue(slot, out SlotDefinition definition))
             {
                 UpdateVisuals(definition, -1f, TechType.None);
@@ -362,8 +301,10 @@ namespace SeaTruckScannerModule
             foreach (KeyValuePair<string, SlotDefinition> kvp in slots)
             {
                 InventoryItem itemInSlot = equipment.GetItemInSlot(kvp.Key);
-                float percent = -1f;
-                TechType batteryTechType = TechType.None;
+
+
+//                float percent = -1f;
+//                TechType batteryTechType = TechType.None;
 
                 if (itemInSlot != null)
                 {
@@ -371,16 +312,18 @@ namespace SeaTruckScannerModule
 
                     if (item != null)
                     {
+/*
                         IBattery battery = item.GetComponent<IBattery>();
 
                         if (battery != null)
                         {
                             percent = battery.charge / battery.capacity;                            
                         }
+*/
                     }
                 }
 
-                UpdateVisuals(kvp.Value, percent, batteryTechType);
+//                UpdateVisuals(kvp.Value, percent, batteryTechType);
             }            
         }
 

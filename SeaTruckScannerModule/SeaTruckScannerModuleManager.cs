@@ -44,7 +44,7 @@ namespace SeaTruckScannerModule
         private string cabinUnpoweredText = string.Empty;
         private string mainUnpoweredText = string.Empty;
         private string fullUnpoweredText = string.Empty;
-        private string scannerReadyText = string.Empty;        
+        private string scannerReadyText = string.Empty;
         private string powerSwitchOnlineText = string.Empty;
 
         public FMOD_CustomEmitter powerButtonSound;
@@ -141,13 +141,13 @@ namespace SeaTruckScannerModule
             cabinUnpoweredText = Language.main.Get("SeatruckScanner_CabinUnpoweredText");
             mainUnpoweredText = Language.main.Get("SeatruckScanner_MainUnpoweredText");
             fullUnpoweredText = Language.main.Get("SeatruckScanner_FullUnpoweredText");
-            scannerReadyText = Language.main.Get("SeatruckScanner_ScannerReadyText");
+            scannerReadyText = string.Empty;
             powerSwitchOnlineText = Language.main.Get("SeatruckScanner_PowerSwitch");            
 
             Main.scannerModules.Add(this);            
 
             list.SetActive(false);
-            uiUnpoweredText.text = unPoweredText;
+            uiUnpoweredText.text = string.Empty;
             uiUnpowered.SetActive(true);
             OnScannerOn = false;
         }        
